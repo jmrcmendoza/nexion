@@ -1,6 +1,6 @@
-import { Manifest } from "deno-slack-sdk/mod.ts";
-import SampleWorkflow from "./workflows/sample_workflow.ts";
-import SampleObjectDatastore from "./datastores/sample_datastore.ts";
+import "jsr:@std/dotenv/load"
+import { Manifest } from "deno-slack-sdk/mod.ts"
+import BugOverviewWorkflow from "./workflows/bug_overview_workflow.ts"
 
 /**
  * The app manifest contains the app's configuration. This
@@ -8,17 +8,18 @@ import SampleObjectDatastore from "./datastores/sample_datastore.ts";
  * https://api.slack.com/automation/manifest
  */
 export default Manifest({
-  name: "nexion",
-  description: "A template for building Slack apps with Deno",
+  name: "Nexion",
+  description: "An AI powered assistant for your team",
   icon: "assets/default_new_app_icon.png",
-  workflows: [SampleWorkflow],
-  outgoingDomains: [],
-  datastores: [SampleObjectDatastore],
+  workflows: [BugOverviewWorkflow],
+  outgoingDomains: ["identifi.atlassian.net", "api.openai.com"],
+  datastores: [],
   botScopes: [
     "commands",
     "chat:write",
     "chat:write.public",
     "datastore:read",
     "datastore:write",
-  ],
-});
+    "groups:history"
+  ]
+})
