@@ -11,10 +11,16 @@ function formatTicketLinks(input) {
   return output
 }
 
-export default async function generateBugOverview(): Promise<string> {
-  const response = await JiraAPI.getIssues()
+export default async function generateBugOverview({
+  jiraOptions,
+  openAIOptions
+}: {
+  jiraOptions: { host: string; username: string; password: string }
+  openAIOptions: { apiKey: string; baseURL: string }
+}): Promise<string> {
+  const response = await JiraAPI.getIssues(jiraOptions, {})
 
-  const result = await OpenAIAPI.generateBugOverview(response?.issues)
+  const result = await OpenAIAPI.generateBugOverview(openAIOptions, response?.issues)
 
   return formatTicketLinks(result)
 }

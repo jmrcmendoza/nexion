@@ -1,4 +1,3 @@
-import "jsr:@std/dotenv/load"
 import { Manifest } from "deno-slack-sdk/mod.ts"
 import BugOverviewWorkflow from "./workflows/bug_overview_workflow.ts"
 

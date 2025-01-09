@@ -1,13 +1,14 @@
 import { Version3Client } from "npm:jira.js"
 
-const client = new Version3Client({
-  host: Deno.env.get("JIRA_HOST") as string,
-  authentication: {
-    basic: {
-      username: Deno.env.get("JIRA_USER"),
-      password: Deno.env.get("JIRA_PASSWORD")
+const jira = async (config: { host: string; username: string; password: string }) =>
+  new Version3Client({
+    host: config.host,
+    authentication: {
+      basic: {
+        username: config.username,
+        password: config.password
+      }
     }
-  }
-})
+  })
 
-export default client
+export default jira

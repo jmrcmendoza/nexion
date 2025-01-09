@@ -2,7 +2,7 @@ import pick from "https://deno.land/x/ramda@v0.27.2/source/pick.js"
 import flatten from "https://deno.land/x/ramda@v0.27.2/source/flatten.js"
 import head from "https://deno.land/x/ramda@v0.27.2/source/head.js"
 
-import client from "../library/jira-client.ts"
+import jira from "../library/jira-client.ts"
 
 import {
   Issue,
@@ -31,11 +31,16 @@ const issueTypes = {
 } as Record<string, JiraIssueType>
 
 export class JiraAPI {
-  static async getIssues(filter?: JiraIssueFilter): Promise<
+  static async getIssues(
+    config,
+    filter?: JiraIssueFilter
+  ): Promise<
     JiraRequestOptions & {
       issues: Issue[]
     }
   > {
+    const client = await jira(config)
+
     let status = `(Done, Canceled)`
 
     let types = "(Bug)"

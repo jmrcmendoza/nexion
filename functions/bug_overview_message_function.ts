@@ -21,8 +21,19 @@ export const BugOverviewMessageFunction = DefineFunction({
   }
 })
 
-export default SlackFunction(BugOverviewMessageFunction, async () => {
-  const message = await generateBugOverview()
+export default SlackFunction(BugOverviewMessageFunction, async ({ env }) => {
+  const jiraOptions = {
+    host: env["JIRA_HOST"],
+    username: env["JIRA_USER"],
+    password: env["JIRA_PASSWORD"]
+  }
+
+  const openAIOptions = {
+    apiKey: env["OPENAI_API_KEY"],
+    baseURL: env["OPENAI_BASE_URL"]
+  }
+
+  const message = await generateBugOverview({ jiraOptions, openAIOptions })
 
   return { outputs: { message } }
 })

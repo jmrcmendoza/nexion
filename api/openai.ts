@@ -1,5 +1,5 @@
 import { Issue } from "../types.ts"
-import openAIClient from "../library/openai-client.ts"
+import openAI from "../library/openai-client.ts"
 
 export class OpenAIAPI {
   private static readonly bugOverviewSystemPrompt = `
@@ -56,8 +56,13 @@ You are a task management assistant. Your role is to review a JSON array of task
    - Organize tasks by priority, starting with "Critical" and ending with "Low".
 `
 
-  static async generateBugOverview(issues: Issue[]): Promise<any> {
-    const completion = await openAIClient.chat.completions.create({
+  static async generateBugOverview(
+    config: { apiKey: string; baseURL: string },
+    issues: Issue[]
+  ): Promise<any> {
+    const client = await openAI({ apiKey: config.apiKey, baseURL: config.baseURL })
+
+    const completion = await client.chat.completions.create({
       model: "gpt-4o",
       messages: [
         {

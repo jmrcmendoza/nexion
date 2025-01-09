@@ -17,7 +17,7 @@ const bugOverviewTrigger: Trigger<typeof BugOverviewWorkflow.definition> = {
   },
   event: {
     event_type: TriggerEventTypes.MessagePosted,
-    channel_ids: ["C0875Q045P0", "C01HWMJ5MT4"],
+    channel_ids: ["C087T2P047P", "C01HWMJ5MT4", "C087VQMHG0K"],
     filter: {
       version: 1,
       root: {
