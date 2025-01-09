@@ -9,7 +9,7 @@ import BugOverviewWorkflow from "./workflows/bug_overview_workflow.ts"
 export default Manifest({
   name: "Nexion",
   description: "An AI powered assistant for your team",
-  icon: "assets/default_new_app_icon.png",
+  icon: "assets/nexion_icon.png",
   workflows: [BugOverviewWorkflow],
   outgoingDomains: ["identifi.atlassian.net", "api.openai.com"],
   datastores: [],
