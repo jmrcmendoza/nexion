@@ -61,7 +61,7 @@ export type JiraIssueFieldsResponse = {
   statuscategorychangedate: string
   updated: string
   created: string
-  description?: string
+  description?: { content: Record<string, any>[] }
   priority?: { name: string }
   comment?: { comments: [accountId: string, displayName: string, body: string] }
 }

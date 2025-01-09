@@ -1,5 +1,5 @@
 import { Trigger } from "deno-slack-sdk/types.ts"
-import { TriggerTypes, TriggerEventTypes } from "deno-slack-api/mod.ts"
+import { TriggerEventTypes, TriggerTypes } from "deno-slack-api/mod.ts"
 import BugOverviewWorkflow from "../workflows/bug_overview_workflow.ts"
 
 const bugOverviewTrigger: Trigger<typeof BugOverviewWorkflow.definition> = {

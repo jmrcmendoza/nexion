@@ -1,12 +1,13 @@
-import JiraApi from "npm:jira-client"
+import { Version3Client } from "npm:jira.js"
 
-const jiraClient = new JiraApi({
-  protocol: "https",
+const client = new Version3Client({
   host: Deno.env.get("JIRA_HOST") as string,
-  username: Deno.env.get("JIRA_USER"),
-  password: Deno.env.get("JIRA_PASSWORD"),
-  apiVersion: "2",
-  strictSSL: true
+  authentication: {
+    basic: {
+      username: Deno.env.get("JIRA_USER"),
+      password: Deno.env.get("JIRA_PASSWORD")
+    }
+  }
 })
 
-export default jiraClient
+export default client

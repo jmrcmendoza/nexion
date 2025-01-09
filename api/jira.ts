@@ -1,5 +1,8 @@
 import pick from "https://deno.land/x/ramda@v0.27.2/source/pick.js"
-import jiraClient from "../library/jira-client.ts"
+import flatten from "https://deno.land/x/ramda@v0.27.2/source/flatten.js"
+import head from "https://deno.land/x/ramda@v0.27.2/source/head.js"
+
+import client from "../library/jira-client.ts"
 
 import {
   Issue,
@@ -28,10 +31,7 @@ const issueTypes = {
 } as Record<string, JiraIssueType>
 
 export class JiraAPI {
-  static async getIssues(
-    filter?: JiraIssueFilter,
-    options?: Partial<JiraRequestOptions>
-  ): Promise<
+  static async getIssues(filter?: JiraIssueFilter): Promise<
     JiraRequestOptions & {
       issues: Issue[]
     }
@@ -51,25 +51,8 @@ export class JiraAPI {
 
     const jql = `${query} ORDER BY created DESC, resolved DESC, status DESC, updated DESC`
 
-    const result = (await jiraClient.searchJira(jql, {
-      maxResults: options?.maxResults || 10000,
-      startAt: options?.startAt,
-      expand: ["changelog"],
-      fields: [
-        "parent",
-        "summary",
-        "issuetype",
-        "assignee",
-        "reporter",
-        "statuscategorychangedate",
-        "created",
-        "updated",
-        "status",
-        "subtasks",
-        "comment",
-        "priority",
-        "description"
-      ]
+    const result = (await client.issueSearch.searchForIssuesUsingJql({
+      jql
     })) as JiraRequestOptions & {
       issues: {
         key: string
@@ -78,30 +61,64 @@ export class JiraAPI {
       }[]
     }
 
-    const issues: Issue[] = result.issues.map((issue) => {
-      return {
-        key: issue.key,
-        summary: issue.fields.summary,
-        assignee: {
-          id: issue.fields?.assignee?.accountId,
-          displayName: issue.fields?.assignee?.displayName
-        },
-        reporter: {
-          id: issue.fields?.reporter?.accountId,
-          displayName: issue.fields?.reporter?.displayName
-        },
-        status: issue.fields?.status?.name as JiraStatus,
-        type: issueTypes[issue.fields?.issuetype?.id],
-        statusCategoryChangeDate: issue.fields?.statuscategorychangedate,
-        comments: issue.fields?.comment?.comments.map((comment: any) => ({
-          accountId: comment.author.accountId,
-          displayName: comment.author.displayName,
-          body: comment.body
-        })),
-        priority: issue.fields?.priority?.name,
-        description: issue.fields?.description
-      }
-    })
+    const issues: Issue[] = await Promise.all(
+      result?.issues?.map(async (issue) => {
+        const commentsResponse = await client.issueComments.getComments({
+          issueIdOrKey: issue.key
+        })
+
+        const comments = commentsResponse?.comments
+          ?.map((comment: any) => ({
+            accountId: comment.author.accountId,
+            displayName: comment.author.displayName,
+            body: head(
+              comment.body.content.map((data) =>
+                data.content
+                  .map((comment) => {
+                    if (comment.type === "text") return comment.text
+                    if (comment.type === "media")
+                      return comment.attrs?.alt
+                        ? `${comment.attrs?.alt}|width:${comment.attrs?.width}|height:${comment.attrs?.height}`
+                        : ""
+                    if (comment.type === "mention") return comment.attrs.text
+
+                    return ""
+                  })
+                  .filter((comment) => !!comment)
+                  .join("")
+              )
+            )
+          }))
+          .filter((comment) => comment.body) as any
+
+        return {
+          key: issue.key,
+          summary: issue.fields.summary,
+          assignee: {
+            id: issue.fields?.assignee?.accountId,
+            displayName: issue.fields?.assignee?.displayName
+          },
+          reporter: {
+            id: issue.fields?.reporter?.accountId,
+            displayName: issue.fields?.reporter?.displayName
+          },
+          status: issue.fields?.status?.name as JiraStatus,
+          type: issueTypes[issue.fields?.issuetype?.id],
+          statusCategoryChangeDate: issue.fields?.statuscategorychangedate,
+          comments,
+          priority: issue.fields?.priority?.name,
+          description: head(
+            flatten(
+              issue.fields?.description?.content?.map((desc) =>
+                desc.content
+                  .map((description) => description.attrs?.text || description.text)
+                  .filter((description) => !!description)
+              ) || []
+            )
+          )
+        }
+      })
+    )
 
     return {
       ...pick(["startAt", "maxResults", "total"])(result as any),
